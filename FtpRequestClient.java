@@ -14,13 +14,14 @@ final class FtpRequestClient implements Runnable {
     // Data Connection
     DataInputStream dataIn;
     DataOutputStream dataOut;
-    
+
     BufferedReader br;
     //  Create dataConnection DataStreams(TCP connections) independently within each control function
 
     // Constructor
     public FtpRequestClient(Socket socket) throws Exception {
 		    this.socket = socket;
+          br = new BufferedReader(new InputStreamReader(System.in));
     }
 
     private void List() {
@@ -53,7 +54,19 @@ final class FtpRequestClient implements Runnable {
       // Wait for input from user. On input trigger appropriate function.
 
       try {
-  		    processRequest();
+  		    while(true) {
+             String command;
+             System.out.println("Enter a command:");
+             command = br.readLine();
+             String[] commandList = command.split("\\s+");
+
+             if (commandList[0] == "CONNECT") {
+
+             }
+
+
+
+          }
   		} catch (Exception e) {
   		    System.out.println(e);
   		}
