@@ -14,8 +14,9 @@ final class FtpRequestServer implements Runnable {
     // Data Connection
     DataInputStream dataIn;
     DataOutputStream dataOut;
+
     BufferedReader br;
-   //  Create data connection independently in each function
+    //  Create data connection independently in each function
 
 
     // Constructor
@@ -26,7 +27,7 @@ final class FtpRequestServer implements Runnable {
     private void List() {
       // Define data connection. Send dir contents.
 
-   }
+    }
 
 
     private void Get(String fileName) {
@@ -44,7 +45,13 @@ final class FtpRequestServer implements Runnable {
       // Listen on command connection for Command from client. Trigger correct function based on client command.
 
       try {
-  		    processRequest();
+         while() {
+
+
+
+         }
+
+
   		} catch (Exception e) {
   		    System.out.println(e);
   		}
