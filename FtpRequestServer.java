@@ -22,10 +22,13 @@ final class FtpRequestServer implements Runnable {
     // Constructor
     public FtpRequestServer(Socket socket) throws Exception {
 		    this.socket = socket;
+        controlSocket = new ServerSocket(10003);
+        dataSocket = new ServerSocket(10004);
     }
 
     private void List() {
       // Define data connection. Send dir contents.
+      Socket skt = myServerSocket.accept();
       File currentDirectory = new File(".");
       File[] files = currentDirectory.listFiles();
       ArrayList<String> list = new ArrayList<String>();
@@ -35,6 +38,13 @@ final class FtpRequestServer implements Runnable {
         list.add(file.getCanonicalPath().substring(cutPosition));
       }
       catch(Exception e) {}
+      }
+      try{
+        ObjectOutputStream objectOutput = new ObjectOutputStream(skt.getOutputStream());
+        objectOutput.writeObject(list);
+
+      } catch(IOException ioe){
+        ioe.printStackTrace();
       }
     }
 

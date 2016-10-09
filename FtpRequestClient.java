@@ -21,18 +21,27 @@ final class FtpRequestClient implements Runnable {
     // Constructor
     public FtpRequestClient(Socket socket) throws Exception {
 		    this.socket = socket;
-          br = new BufferedReader(new InputStreamReader(System.in));
+        br = new BufferedReader(new InputStreamReader(System.in));
+        controlSocket = socket;
+        dataSocket = new Socket(10004);
+        controlIn = new DataInputStream(controlSocket.getInputStream());
+        controlOut = new DataOutputStream(controlSocket.getOutputStream());
+
     }
 
     private void List() {
       // Define data connection. Wait for list. Display to user
-      dataIn = new DataInputStream()
-      for (){
+      ArrayList<String> fileList = new ArrayList<String>();
+      try{
+        ObjectInputStream objectInput = new ObjectInputStream(dataSocket.getInputStream());
         try{
-
-      }
-      catch(Exception e) {}
-      }
+          Object object = objectInput.readObject();
+          fileList = (ArrayList<String>) object;
+          for(String fileName : fileList){
+            System.out.println(fileName);
+          }
+        } catch(IOException e){ e.printStackTrace();}
+      } catch(UnknownHostException e) { e.printStackTrace(); } 
     }
 
     private void Get(String fileName) {
@@ -57,9 +66,9 @@ final class FtpRequestClient implements Runnable {
              command = br.readLine();
              String[] commandList = command.split("\\s+");
 
-             if (commandList[0] == "CONNECT") {
-
-             }
+            if (commandList[0].toUpperCase() == "CONNECT") {
+              
+            }
 
 
 
