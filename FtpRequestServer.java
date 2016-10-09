@@ -26,7 +26,16 @@ final class FtpRequestServer implements Runnable {
 
     private void List() {
       // Define data connection. Send dir contents.
-
+      File currentDirectory = new File(".");
+      File[] files = currentDirectory.listFiles();
+      ArrayList<String> list = new ArrayList<String>();
+      int cutPosition = 1 + System.getProperty("user.dir").length();
+      for (File file : files){
+        try{
+        list.add(file.getCanonicalPath().substring(cutPosition));
+      }
+      catch(Exception e) {}
+      }
     }
 
 
