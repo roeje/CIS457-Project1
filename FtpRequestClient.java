@@ -3,55 +3,103 @@ import java.net.* ;
 import java.util.* ;
 
 final class FtpRequestClient implements Runnable {
-    final static String CRLF = "\r\n";
-   //  int controlPort = 10003;
-    int dataPort = 10004;
-    Socket controlSocket;
-    Socket dataSocket;
+   final static String CRLF = "\r\n";
+   int controlPort;
+   String serverName;
+   String dataServerName = "localhost";
+   Socket controlSocket;
+   Socket dataSocket;
 
-    // Control Connection
-    DataInputStream controlIn;
-    DataOutputStream controlOut;
+   // Control Connection
+   DataInputStream controlIn;
+   DataOutputStream controlOut;
 
-    // Data Connection
-    DataInputStream dataIn;
-    DataOutputStream dataOut;
+   // Data Connection
+   DataInputStream dataIn;
+   DataOutputStream dataOut;
 
-    BufferedReader br;
-    //  Create dataConnection DataStreams(TCP connections) independently within each control function
+   //
+   BufferedReader br;
 
-    // Constructor
-    public FtpRequestClient(Socket socket) throws Exception {
-		//   controlSocket = socket;
-        br = new BufferedReader(new InputStreamReader(System.in));
-        controlSocket = socket;
-        dataSocket = new Socket("localhost", dataPort);
-        controlIn = new DataInputStream(controlSocket.getInputStream());
-        controlOut = new DataOutputStream(controlSocket.getOutputStream());
 
-    }
+   // Constructor for class
+   FtpRequestClient() throws Exception {
+      br = new BufferedReader(new InputStreamReader(System.in));
+   }
 
-    private void List() {
-      // Define data connection. Wait for list. Display to user
-      ArrayList<String> fileList = new ArrayList<String>();
-      try{
-        ObjectInputStream objectInput = new ObjectInputStream(dataSocket.getInputStream());
-        try{
-          Object object = objectInput.readObject();
-          fileList = (ArrayList<String>) object;
-          for(String fileName : fileList){
-            System.out.println(fileName);
-          }
-        } catch(IOException e){ e.printStackTrace();}
-      } catch(UnknownHostException e) { e.printStackTrace(); }
-    }
+   // Send Test Command
+   void test() {
+      System.out.println("Testing Control Connection:");
+      try {
+         this.controlOut.writeUTF("TEST");
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
 
-    private void Get(String fileName) {
+   void createDataConnection() {
+      try {
+         this.dataSocket = new ServerSocket(this.controlPort + 1).accept();
+         this.dataIn = new DataInputStream(this.dataSocket.getInputStream());
+         this.dataOut = new DataOutputStream(this.dataSocket.getOutputStream());
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
+
+   void connectToServer(int port, String serverName) {
+      this.serverName = serverName;
+      this.controlPort = port;
+      try {
+         this.controlSocket = new Socket(serverName, port);
+         this.controlIn = new DataInputStream(this.controlSocket.getInputStream());
+         this.controlOut = new DataOutputStream(this.controlSocket.getOutputStream());
+         this.controlOut.writeUTF("TEST");
+         System.out.println("Connection Established to " + serverName + " on port: " + port);
+      } catch(Exception e) {
+         System.out.println(e);
+      }
+   }
+
+   void listDirContents() {
+      System.out.println("Requesting dirctory contents:");
+      try {
+         this.controlOut.writeUTF("LIST");
+
+         // Create data connection and wait for incomming connection from server
+         createDataConnection();
+         String file = this.dataIn.readUTF();
+         System.out.println("Files are: ");
+         while (file != null) {
+            System.out.println(file);
+            file = this.dataIn.readUTF();
+         }
+
+
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+
+      // ArrayList<String> fileList = new ArrayList<String>();
+      // try {
+      //   ObjectInputStream objectInput = new ObjectInputStream(dataSocket.getInputStream());
+      //   try {
+      //     Object object = objectInput.readObject();
+      //     fileList = (ArrayList<String>) object;
+      //     for(String fileName : fileList){
+      //       System.out.println(fileName);
+      //     }
+      //  } catch(Exception e){ e.printStackTrace();}
+      // } catch(Exception e) { e.printStackTrace();}
+
+   }
+
+   void getFile(String fileName) {
       // Define data connection. Read incomming data. Save file.
 
-    }
+   }
 
-   private void Send(String fileName) {
+   void sendFile(String fileName) {
       // Define data connection, wait for confirm, send file
 
 
@@ -60,21 +108,37 @@ final class FtpRequestClient implements Runnable {
    // Implement the run() method of the Runnable interface.
    public void run() {
       // Wait for input from user. On input trigger appropriate function.
+      System.out.println("FTP Client Started...");
+      System.out.println("Enter Command or Connect to FTP Server:");
+      while(true) {
+         try {
+            String[] cmd = br.readLine().split("\\s+");
+            if(cmd[0] == null) {
+               System.out.println("Invalid Command");
+            }
+            else {
+               switch(cmd[0].toUpperCase()) {
+                  case "CONNECT":
+                     System.out.println("Connect:");
+                     System.out.println("Port:" + cmd[2]);
+                     System.out.println("ServerName: " + cmd[1]);
+                     connectToServer(Integer.parseInt(cmd[2]), cmd[1]);
+                     break;
+                  case "LIST":
+                     listDirContents();
+                     break;
+                  case "RETR":
+                     break;
+                  case "STOR":
+                     break;
+                  case "QUIT":
+                     break;
+               }
+            }
 
-      try {
-  		    while(true) {
-             String command;
-             System.out.println("Enter a command:");
-             command = br.readLine();
-             String[] commandList = command.split("\\s+");
-
-             if (commandList[0].toUpperCase() == "CONNECT") {
-
-             }
-
-          }
-  		} catch (Exception e) {
-  		    System.out.println(e);
-  		}
+     	   } catch (Exception e) {
+     	      System.out.println(e);
+     	   }
+      }
    }
 }

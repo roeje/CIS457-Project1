@@ -4,8 +4,9 @@ import java.util.* ;
 
 final class FtpRequestServer implements Runnable {
     final static String CRLF = "\r\n";
-    ServerSocket controlSocket;
-    ServerSocket dataSocket;
+    int dataPort = 10004;
+    Socket controlSocket;
+    Socket dataSocket;
 
     // Control Connection
     DataInputStream controlIn;
@@ -15,64 +16,79 @@ final class FtpRequestServer implements Runnable {
     DataInputStream dataIn;
     DataOutputStream dataOut;
 
-    BufferedReader br;
-    //  Create data connection independently in each function
-
-
     // Constructor
-    public FtpRequestServer(Socket socket) throws Exception {
-		    this.socket = socket;
-        controlSocket = new ServerSocket(10003);
-        dataSocket = new ServerSocket(10004);
-    }
-
-    private void List() {
-      // Define data connection. Send dir contents.
-      Socket skt = myServerSocket.accept();
-      File currentDirectory = new File(".");
-      File[] files = currentDirectory.listFiles();
-      ArrayList<String> list = new ArrayList<String>();
-      int cutPosition = 1 + System.getProperty("user.dir").length();
-      for (File file : files) {
-        try{
-        list.add(file.getCanonicalPath().substring(cutPosition));
-      }
-      catch(Exception e) {}
-      }
-      try{
-        ObjectOutputStream objectOutput = new ObjectOutputStream(skt.getOutputStream());
-        objectOutput.writeObject(list);
-
-      } catch(IOException ioe){
-        ioe.printStackTrace();
+    FtpRequestServer(Socket socket) throws Exception {
+      try {
+         this.controlSocket = socket;
+         this.controlIn = new DataInputStream(controlSocket.getInputStream());
+         this.controlOut = new DataOutputStream(controlSocket.getOutputStream());
+      } catch (Exception e) {
+         System.out.println(e);
       }
     }
 
+    void createDataConnection() {
+      try {
+         this.dataSocket = new Socket("localhost", dataPort);
+         this.dataIn = new DataInputStream(this.dataSocket.getInputStream());
+         this.dataOut = new DataOutputStream(this.dataSocket.getOutputStream());
 
-    private void Get(String fileName) {
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+    }
+
+    void listDirContents() {
+      System.out.println("List all files in current directory requet recieved:");
+      try {
+         createDataConnection();
+         File[] files = new File(".").listFiles();
+
+         for (File file : files) {
+            this.dataOut.writeUTF(file.getName());
+         }
+         System.out.println("Files Sent!");
+      } catch (Exception e) {
+         System.out.println(e);
+      }
+   }
+   void getFile(String fileName) {
       // Define data connection. Send file.
 
-    }
+   }
 
-    private void Save(String fileName) {
+   void sendFile(String fileName) {
       // Define data connection. Wait for data. Save file.
 
-    }
+   }
 
-    // Implement the run() method of the Runnable interface.
+   // Implement the run() method of the Runnable interface.
    public void run() {
       // Listen on command connection for Command from client. Trigger correct function based on client command.
+      System.out.println("Server Thread Started:");
+      while(true) {
+         try {
+            String cmd = controlIn.readUTF();
+            System.out.println("New Command: " + cmd);
+            switch(cmd.toUpperCase()) {
+               case "LIST":
+                  listDirContents();
+                  break;
+               case "RETR":
+                  break;
+               case "STOR":
+                  break;
+               case "QUIT":
+                  break;
+               case "TEST":
+                  System.out.println("Test Recieved!!!");
+                  break;
+            }
 
-      try {
-         while() {
+     		} catch (Exception e) {
+     		    System.out.println(e);
+     		}
+      }
 
-
-
-         }
-
-
-  		} catch (Exception e) {
-  		    System.out.println(e);
-  		}
    }
 }

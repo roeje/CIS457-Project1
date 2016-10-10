@@ -11,14 +11,14 @@ public final class FtpServer {
 
    	// Establish the listen socket.
    	ServerSocket socket = new ServerSocket(port);
-      System.out.println("FTP Server started on port: " + port.toString());
+      System.out.println("FTP Server started on port: " + port);
 
    	while (true) {
    	    // Listen for a TCP connection request.
    	    Socket connection = socket.accept();
 
    	    // Create FTP request object
-   	    FTPRequestServer request = new FTPRequestServer(connection);
+   	    FtpRequestServer request = new FtpRequestServer(connection);
 
    	    // Create a new thread to process the request.
    	    Thread thread = new Thread(request);
