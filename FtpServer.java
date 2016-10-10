@@ -7,7 +7,7 @@ public final class FtpServer {
    	// Get the port number from the command line.
    	// int port = (new Integer(argv[0]));
 
-      int port = 10002;
+      int port = 10003;
 
    	// Establish the listen socket.
    	ServerSocket socket = new ServerSocket(port);

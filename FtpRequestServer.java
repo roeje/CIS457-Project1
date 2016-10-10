@@ -33,7 +33,7 @@ final class FtpRequestServer implements Runnable {
       File[] files = currentDirectory.listFiles();
       ArrayList<String> list = new ArrayList<String>();
       int cutPosition = 1 + System.getProperty("user.dir").length();
-      for (File file : files){
+      for (File file : files) {
         try{
         list.add(file.getCanonicalPath().substring(cutPosition));
       }
@@ -54,12 +54,12 @@ final class FtpRequestServer implements Runnable {
 
     }
 
-   private void Save(String fileName) {
+    private void Save(String fileName) {
       // Define data connection. Wait for data. Save file.
 
-   }
+    }
 
-   // Implement the run() method of the Runnable interface.
+    // Implement the run() method of the Runnable interface.
    public void run() {
       // Listen on command connection for Command from client. Trigger correct function based on client command.
 

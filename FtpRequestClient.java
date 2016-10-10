@@ -4,6 +4,8 @@ import java.util.* ;
 
 final class FtpRequestClient implements Runnable {
     final static String CRLF = "\r\n";
+   //  int controlPort = 10003;
+    int dataPort = 10004;
     Socket controlSocket;
     Socket dataSocket;
 
@@ -20,10 +22,10 @@ final class FtpRequestClient implements Runnable {
 
     // Constructor
     public FtpRequestClient(Socket socket) throws Exception {
-		    this.socket = socket;
+		//   controlSocket = socket;
         br = new BufferedReader(new InputStreamReader(System.in));
         controlSocket = socket;
-        dataSocket = new Socket(10004);
+        dataSocket = new Socket("localhost", dataPort);
         controlIn = new DataInputStream(controlSocket.getInputStream());
         controlOut = new DataOutputStream(controlSocket.getOutputStream());
 
@@ -41,7 +43,7 @@ final class FtpRequestClient implements Runnable {
             System.out.println(fileName);
           }
         } catch(IOException e){ e.printStackTrace();}
-      } catch(UnknownHostException e) { e.printStackTrace(); } 
+      } catch(UnknownHostException e) { e.printStackTrace(); }
     }
 
     private void Get(String fileName) {
@@ -66,11 +68,9 @@ final class FtpRequestClient implements Runnable {
              command = br.readLine();
              String[] commandList = command.split("\\s+");
 
-            if (commandList[0].toUpperCase() == "CONNECT") {
-              
-            }
+             if (commandList[0].toUpperCase() == "CONNECT") {
 
-
+             }
 
           }
   		} catch (Exception e) {
