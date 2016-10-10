@@ -96,8 +96,37 @@ final class FtpRequestClient implements Runnable {
 
    void getFile(String fileName) {
       // Define data connection. Read incomming data. Save file.
-
+      try{
+         this.controlOut.writeUTF("RETR" + " " + fileName);
+         createDataConnection();
+         String serverMessage = this.dataIn.readUTF();
+         if(serverMessage.compareTo("File Not Found") == 0){
+            System.out.println("File not found on Server ...");
+            return;
+         }
+         else{ //if(serverMessage.compareTo("READY") == 0){
+            System.out.println("Retrieving file: " + fileName + "...");
+            File file = new File(fileName);
+            FileOutputStream fout = new FileOutputStream(file);
+            int ch;
+            String temp;
+            do{
+               temp = dataIn.readUTF();
+               ch = Integer.parseInt(temp);
+               if(ch != -1){
+                  System.out.println(temp);
+                  fout.write(ch);
+               }
+               }while(ch!=-1);
+               fout.close();
+               System.out.println(dataIn.readUTF());
+            }
+            System.out.println("File Retrieved");
+         }catch  (Exception e) {
+         System.out.println("blah");
+      }
    }
+
 
    void sendFile(String fileName) {
       // Define data connection, wait for confirm, send file
@@ -111,6 +140,7 @@ final class FtpRequestClient implements Runnable {
       System.out.println("FTP Client Started...");
       System.out.println("Enter Command or Connect to FTP Server:");
       while(true) {
+         System.out.println("fish");
          try {
             String[] cmd = br.readLine().split("\\s+");
             if(cmd[0] == null) {
@@ -128,6 +158,9 @@ final class FtpRequestClient implements Runnable {
                      listDirContents();
                      break;
                   case "RETR":
+                     System.out.println(cmd[0]);
+                     System.out.println("User entered get file command:");
+                     getFile(cmd[1]);
                      break;
                   case "STOR":
                      break;

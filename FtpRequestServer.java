@@ -55,9 +55,33 @@ final class FtpRequestServer implements Runnable {
    void getFile(String fileName) {
       // Define data connection. Send file.
 
+      try{
+        createDataConnection();
+        File file = new File(fileName);
+        if(!file.exists()){
+          dataOut.writeUTF("File Not Found");
+          System.out.println("File Not Found");
+          return;
+        }
+        else{
+          System.out.println("Sending File...");
+          dataOut.writeUTF("READY");
+          FileInputStream fileIn = new FileInputStream(file);
+          int ch;
+          do{
+            ch = fileIn.read();
+            dataOut.writeUTF(String.valueOf(ch));
+          }while(ch!=-1);
+          fileIn.close();
+          System.out.println("File Sent!");
+        }
+      }catch(Exception e){
+        System.out.println(e);
+      }
    }
 
    void sendFile(String fileName) {
+
       // Define data connection. Wait for data. Save file.
 
    }
@@ -69,12 +93,15 @@ final class FtpRequestServer implements Runnable {
       while(true) {
          try {
             String cmd = controlIn.readUTF();
-            System.out.println("New Command: " + cmd);
-            switch(cmd.toUpperCase()) {
+            String[] command = cmd.split("\\s+");
+            System.out.println("New Command: " + command[0]);
+            switch(command[0].toUpperCase()) {
                case "LIST":
                   listDirContents();
                   break;
                case "RETR":
+                  System.out.println("Recieved GET FILE Command:");
+                  getFile(command[1]);
                   break;
                case "STOR":
                   break;
