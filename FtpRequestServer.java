@@ -53,35 +53,41 @@ final class FtpRequestServer implements Runnable {
          System.out.println(e);
       }
    }
-   void getFile(String fileName) {
-      // Define data connection. Send file.
+
+
+
+   void retreveFile(String fileName) {
+      System.out.println("Getting File: " + fileName);
 
       try{
-        createDataConnection();
-        File file = new File(fileName);
-        if(!file.exists()){
-          dataOut.writeUTF("File Not Found");
-          System.out.println("File Not Found");
-          return;
-        }
-        else{
-          System.out.println("Sending File...");
-          dataOut.writeUTF("READY");
-          FileInputStream fileIn = new FileInputStream(file);
-          int ch;
-          do{
-            ch = fileIn.read();
-            dataOut.writeUTF(String.valueOf(ch));
-          }while(ch!=-1);
-          fileIn.close();
-          System.out.println("File Sent!");
-        }
+
+      //   createDataConnection();
+      //   File file = new File(fileName);
+      //   if(!file.exists()){
+      //     dataOut.writeUTF("File Not Found");
+      //     System.out.println("File Not Found");
+      //     return;
+      //   }
+      //   else{
+      //     System.out.println("Sending File...");
+      //     dataOut.writeUTF("READY");
+      //     FileInputStream fileIn = new FileInputStream(file);
+      //     int ch;
+      //     do{
+      //       ch = fileIn.read();
+      //       dataOut.writeUTF(String.valueOf(ch));
+      //     }while(ch!=-1);
+      //     fileIn.close();
+      //     System.out.println("File Sent!");
+      //   }
+
       }catch(Exception e){
         System.out.println(e);
       }
+
    }
 
-   void sendFile(String fileName) {
+   void storeFile(String fileName) {
 
       // Define data connection. Wait for data. Save file.
 
@@ -94,15 +100,19 @@ final class FtpRequestServer implements Runnable {
       while(true) {
          try {
             String cmd = controlIn.readUTF();
-            String[] command = cmd.split("\\s+");
-            System.out.println("New Command: " + command[0]);
-            switch(command[0].toUpperCase()) {
+            // String[] command = cmd.split("\\s");
+
+            System.out.println("Server recieve command: " + cmd);
+
+            switch(cmd.toUpperCase()) {
                case "LIST":
                   listDirContents();
                   break;
                case "RETR":
-                  System.out.println("Recieved GET FILE Command:");
-                  getFile(command[1]);
+                  String fileName = controlIn.readUTF();
+                  System.out.println("Recieved GET FILE: " + fileName);
+
+                  retreveFile(fileName);
                   break;
                case "STOR":
                   break;
