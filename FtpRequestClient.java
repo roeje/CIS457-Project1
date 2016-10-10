@@ -74,7 +74,7 @@ final class FtpRequestClient implements Runnable {
             System.out.println(file);
             file = this.dataIn.readUTF();
          }
-
+         this.dataSocket.close();
 
       } catch (Exception e) {
          System.out.println(e);
@@ -95,7 +95,7 @@ final class FtpRequestClient implements Runnable {
    }
 
    void getFile(String fileName) {
-      // Define data connection. Read incomming data. Save file.
+      
 
    }
 

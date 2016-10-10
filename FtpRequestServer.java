@@ -48,6 +48,7 @@ final class FtpRequestServer implements Runnable {
             this.dataOut.writeUTF(file.getName());
          }
          System.out.println("Files Sent!");
+         this.dataSocket.close();
       } catch (Exception e) {
          System.out.println(e);
       }
