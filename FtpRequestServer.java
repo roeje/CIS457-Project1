@@ -61,26 +61,29 @@ final class FtpRequestServer implements Runnable {
 
       try{
 
-      //   createDataConnection();
-      //   File file = new File(fileName);
-      //   if(!file.exists()){
-      //     dataOut.writeUTF("File Not Found");
-      //     System.out.println("File Not Found");
-      //     return;
-      //   }
-      //   else{
-      //     System.out.println("Sending File...");
-      //     dataOut.writeUTF("READY");
-      //     FileInputStream fileIn = new FileInputStream(file);
-      //     int ch;
-      //     do{
-      //       ch = fileIn.read();
-      //       dataOut.writeUTF(String.valueOf(ch));
-      //     }while(ch!=-1);
-      //     fileIn.close();
-      //     System.out.println("File Sent!");
-      //   }
+        createDataConnection();
+        File file = new File(fileName);
+        if(!file.exists()){
+          dataOut.writeUTF("File Not Found");
+          System.out.println("File Not Found");
+          return;
+        }
+        else{
+          System.out.println("Sending File...");
+          dataOut.writeUTF("READY");
+          FileInputStream fileIn = new FileInputStream(file);
+          int ch;
+          do{
+            ch = fileIn.read();
+            dataOut.writeUTF(String.valueOf(ch));
+          }while(ch!=-1);
 
+          fileIn.close();
+          System.out.println("File Sent!");
+        }
+        this.dataIn.close();
+        this.dataOut.close();
+        this.dataSocket.close();
       }catch(Exception e){
         System.out.println(e);
       }

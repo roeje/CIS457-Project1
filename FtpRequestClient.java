@@ -100,38 +100,44 @@ final class FtpRequestClient implements Runnable {
       try {
 
          this.controlOut.writeUTF("RETR");
+         this.controlOut.writeUTF(fileName);
 
+         createDataConnection();
+         System.out.println("After CONN");
+         String serverMessage = this.dataIn.readUTF();
 
-         // this.controlOut.writeUTF("RETR" + " " + fileName);
-         // createDataConnection();
-         // String serverMessage = this.dataIn.readUTF();
-         //
-         // if(serverMessage.compareTo("File Not Found") == 0){
-         //    System.out.println("File not found on Server ...");
-         //    return;
-         // }
-         // else {
-         //
-         //    if(serverMessage.compareTo("READY") == 0){
-         //       System.out.println("Retrieving file: " + fileName + "...");
-         //       File file = new File(fileName);
-         //       FileOutputStream fout = new FileOutputStream(file);
-         //       int ch;
-         //       String temp;
-         //       do {
-         //          temp = dataIn.readUTF();
-         //          ch = Integer.parseInt(temp);
-         //          if(ch != -1){
-         //             System.out.println(temp);
-         //             fout.write(ch);
-         //          }
-         //       } while(ch!=-1);
-         //          fout.close();
-         //          System.out.println(dataIn.readUTF());
-         //    }
-         //    System.out.println("File Retrieved");
-         // }
+         if(serverMessage.compareTo("File Not Found") == 0){
+            System.out.println("File not found on Server ...");
+            return;
+         }
+         else {
 
+            if(serverMessage.compareTo("READY") == 0){
+               System.out.println("Retrieving file: " + fileName + "...");
+               String newFileName = "NEW" + fileName;
+               File file = new File(newFileName);
+               FileOutputStream fout = new FileOutputStream(file);
+               int ch;
+               String temp;
+               do {
+                  temp = dataIn.readUTF();
+                  ch = Integer.parseInt(temp);
+                  if(ch != -1){
+                     System.out.println(temp);
+                     fout.write(ch);
+                  }
+               } while(ch!=-1);
+                  fout.close();
+                  System.out.println(dataIn.readUTF());
+            }
+            System.out.println("File Retrieved");
+         }
+         this.dataIn.close();
+         this.dataIn = null;
+         this.dataOut.close();
+         this.dataIn = null;
+         this.dataSocket.close();
+         this.dataSocket = null;
       } catch (Exception e) {
          System.out.println("blah");
       }
