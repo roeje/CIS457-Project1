@@ -57,24 +57,30 @@ final class FtpRequestClient implements Runnable {
 
    void listDirContents() {
 
-      // System.out.println("Requesting dirctory contents:");
-      // try {
-      //    this.controlOut.writeUTF("LIST");
-      //
-      //    InputStream in = dataSocket.getInputStream();
-      //    DataInputStream din = new DataInputStream(in);
-      //
-      //    String file = din.readUTF();
-      //    // System.out.println("Files are: ");
-      //    while (!(file.equals("END"))) {
-      //       System.out.println(file);
-      //       file = din.readUTF();
-      //    }
-      //    din.close();
-      //
-      // } catch (Exception e) {
-      //    System.out.println(e);
-      // }
+      System.out.println("Requesting dirctory contents:");
+      try {
+         this.controlOut.writeUTF("LIST");
+         ServerSocket server = new ServerSocket(10004);  
+         Socket dataSocket = server.accept();
+         DataInputStream din = new DataInputStream(dataSocket.getInputStream());
+
+         // InputStream in = dataSocket.getInputStream();
+         // DataInputStream din = new DataInputStream(in);
+      
+         String file = din.readUTF();
+         // System.out.println("Files are: ");
+         while (!(file.equals("END"))) {
+            System.out.println(file);
+            file = din.readUTF();
+         }
+         server.close();
+         dataSocket.close();
+         controlOut.flush();
+         // din.flush();
+      
+      } catch (Exception e) {
+         System.out.println(e);
+      }
    }
 
    void requestFile(String fileName) {
@@ -101,12 +107,13 @@ final class FtpRequestClient implements Runnable {
             sizeOfData -= bytes;
          }
 
-         out.close();
+         out.close();         
 
          //   dataSocket.close();
 
-         din.close();
+         // din.close();
          dataSocket.close();
+         
          System.out.println("File Saved Sucessfully...");
 
       } catch (Exception e) {
@@ -117,47 +124,49 @@ final class FtpRequestClient implements Runnable {
 
    void sendFile(String fileName) {
 
-      // try{
-      //    controlOut.writeUTF("STOR");
-      //    controlOut.writeUTF(fileName);
-      //
-      //    // Socket dataSocket = new Socket(clientName, dataPort);
-      //    OutputStream out = dataSocket.getOutputStream();
-      //    DataOutputStream dout = new DataOutputStream(out);
-      //    // DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
-      //
-      //    File file = new File(fileName);
-      //    byte[] bytes = new byte[(int)file.length()];
-      //
-      //    FileInputStream fin = new FileInputStream(file);
-      //
-      //    BufferedInputStream buffin = new BufferedInputStream(fin);
-      //
-      //    DataInputStream datain = new DataInputStream(buffin);
-      //    datain.readFully(bytes, 0, bytes.length);
-      //
-      //    dout.writeLong(bytes.length);
-      //    dout.write(bytes, 0, bytes.length);
-      //    dout.flush();
-      //    System.out.println("File Sent To Server...");
-      //
-      // } catch (Exception e) {
-      //   System.out.println(e);
-      // }
-
-   }
-
-   void quit(){
       try{
-         this.controlOut.writeUTF("QUIT");
-         if(this.dataIn != null){ this.dataIn.close(); }
-         if(this.dataOut != null){ this.dataOut.close(); }
-         if(this.dataSocket != null) { this.dataSocket.close();}
-      } catch(Exception e){
+         controlOut.writeUTF("STOR");
+         controlOut.writeUTF(fileName);
+      
+         Socket dataSocket = new Socket(serverName, 10004);
+         // OutputStream out = dataSocket.getOutputStream();
+         // DataOutputStream dout = new DataOutputStream(out);
+         DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
+      
+         File file = new File(fileName);
+         byte[] bytes = new byte[(int)file.length()];
+      
+         FileInputStream fin = new FileInputStream(file);
+      
+         BufferedInputStream buffin = new BufferedInputStream(fin);
+      
+         DataInputStream datain = new DataInputStream(buffin);
+         datain.readFully(bytes, 0, bytes.length);
+      
+         dout.writeLong(bytes.length);
+         dout.write(bytes, 0, bytes.length);
+         dout.flush();
+         System.out.println("File Sent To Server...");
+
+
+      
+      } catch (Exception e) {
         System.out.println(e);
       }
 
    }
+
+   // void quit(){
+   //    try{
+   //       this.controlOut.writeUTF("QUIT");
+   //       if(this.dataIn != null){ this.dataIn.close(); }
+   //       if(this.dataOut != null){ this.dataOut.close(); }
+   //       if(this.dataSocket != null) { this.dataSocket.close();}
+   //    } catch(Exception e){
+   //      System.out.println(e);
+   //    }
+
+   // }
 
    // Implement the run() method of the Runnable interface.
    public void run() {
