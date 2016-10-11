@@ -102,7 +102,63 @@ final class FtpRequestServer implements Runnable {
 
    void storeFile(String fileName) {
 
-      // Define data connection. Wait for data. Save file.
+      System.out.println("Client sending get request for file: " + fileName);
+
+      try {
+
+         this.controlOut.writeUTF("RETR");
+         this.controlOut.writeUTF(fileName);
+
+         createDataConnection();
+         System.out.println("After CONN");
+         String serverMessage = this.dataIn.readUTF();
+
+         if(serverMessage.compareTo("File Not Found") == 0){
+            System.out.println("File not found on Server ...");
+            return;
+         }
+         else {
+
+            if(serverMessage.compareTo("READY") == 0){
+               System.out.println("Retrieving file: " + fileName + "...");
+               String newFileName = "NEW" + fileName;
+               File file = new File(newFileName);
+               FileOutputStream fout = new FileOutputStream(file);
+               int ch;
+               String temp;
+               do {
+                  temp = dataIn.readUTF();
+                  ch = Integer.parseInt(temp);
+                  if(ch != -1){
+                     System.out.println(temp);
+                     fout.write(ch);
+                  }
+               } while(ch!=-1);
+                  fout.close();
+                  System.out.println(dataIn.readUTF());
+            }
+            System.out.println("File Retrieved");
+         }
+         this.dataIn.close();
+         this.dataIn = null;
+         this.dataOut.close();
+         this.dataIn = null;
+         this.dataSocket.close();
+         this.dataSocket = null;
+      } catch (Exception e) {
+         System.out.println("blah");
+      }
+
+   }
+
+   void quit(){
+      try{
+         if(this.dataIn != null){ this.dataIn.close(); }
+         if(this.dataOut != null){ this.dataOut.close(); }
+         if(this.dataSocket != null) { this.dataSocket.close();}
+      } catch(Exception e){
+        System.out.println(e);
+      }
 
    }
 
@@ -124,13 +180,16 @@ final class FtpRequestServer implements Runnable {
                case "RETR":
                   String fileName = controlIn.readUTF();
                   System.out.println("Recieved GET FILE: " + fileName);
-
                   retreveFile(fileName);
                   break;
                case "STOR":
+                  String fileNme = controlIn.readUTF();
+                  System.out.println("Sending FILE: " + fileNme);
+                  storeFile(fileNme);
                   break;
                case "QUIT":
-                  break;
+                  quit();
+                  return;
                case "TEST":
                   System.out.println("Test Recieved!!!");
                   break;
