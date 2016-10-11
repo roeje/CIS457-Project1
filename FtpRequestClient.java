@@ -36,7 +36,7 @@ final class FtpRequestClient implements Runnable {
       this.serverName = serverName;
       this.controlPort = port;
       try {
-         controlSocket = new Socket("localhost", 10003);
+         controlSocket = new Socket(serverName, 10003);
          controlIn = new DataInputStream(this.controlSocket.getInputStream());
          controlOut = new DataOutputStream(this.controlSocket.getOutputStream());
 
