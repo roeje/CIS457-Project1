@@ -132,12 +132,6 @@ final class FtpRequestClient implements Runnable {
             }
             System.out.println("File Retrieved");
          }
-         this.dataIn.close();
-         this.dataIn = null;
-         this.dataOut.close();
-         this.dataIn = null;
-         this.dataSocket.close();
-         this.dataSocket = null;
       } catch (Exception e) {
          System.out.println("blah");
       }
@@ -145,8 +139,51 @@ final class FtpRequestClient implements Runnable {
 
 
    void storeFile(String fileName) {
-      // Define data connection, wait for confirm, send file
+      System.out.println("Getting File: " + fileName);
 
+      try{
+         this.controlOut.writeUTF("Stor");
+         this.controlOut.writeUTF(fileName);
+        createDataConnection();
+        File file = new File(fileName);
+        if(!file.exists()){
+          dataOut.writeUTF("File Not Found");
+          System.out.println("File Not Found");
+          return;
+        }
+        else{
+          System.out.println("Sending File...");
+          dataOut.writeUTF("READY");
+          FileInputStream fileIn = new FileInputStream(file);
+          int ch;
+          do{
+            ch = fileIn.read();
+            dataOut.writeUTF(String.valueOf(ch));
+          }while(ch!=-1);
+
+          fileIn.close();
+          System.out.println("File Sent!");
+        }
+        this.dataIn.close();
+        this.dataOut.close();
+        this.dataSocket.close();
+      } catch(Exception e){
+        System.out.println(e);
+      }
+
+
+
+   }
+
+   void quit(){
+      try{
+         this.controlOut.writeUTF("QUIT");
+         if(this.dataIn != null){ this.dataIn.close(); }
+         if(this.dataOut != null){ this.dataOut.close(); }
+         if(this.dataSocket != null) { this.dataSocket.close();}
+      } catch(Exception e){
+        System.out.println(e);
+      }
 
    }
 
@@ -155,7 +192,8 @@ final class FtpRequestClient implements Runnable {
       // Wait for input from user. On input trigger appropriate function.
       System.out.println("FTP Client Started...");
       System.out.println("Enter Command or Connect to FTP Server:");
-      while(true) {
+      boolean running = true;
+      while(running) {
          try {
             String[] cmd = br.readLine().split("\\s+");
             if(cmd[0] == null) {
@@ -179,9 +217,12 @@ final class FtpRequestClient implements Runnable {
                      retreveFile(cmd[1]);
                      break;
                   case "STOR":
+                     System.out.println("User entered Store file: " + cmd[1]);
+                     storeFile(cmd[1]);
                      break;
                   case "QUIT":
-                     break;
+                     quit();
+                     return;
                }
             }
 
