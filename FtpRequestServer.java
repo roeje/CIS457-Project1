@@ -26,31 +26,26 @@ final class FtpRequestServer implements Runnable {
 
     void listDirContents() {
 
-      System.out.println("List all files in current directory requet recieved:");
+      System.out.println("Sending list of all directory files...");
       try {
-         System.out.println(clientName);
-      
-         // OutputStream out = dataSocket.getOutputStream();
-         // DataOutputStream dout = new DataOutputStream(out);
+        // System.out.println(clientName); 
 
-        Socket dataSocket = new Socket("localhost", 10004);
+        Socket dataSocket = new Socket(clientName, dataPort);
         DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
+      
+        File[] files = new File(".").listFiles();     
+      
+        for (File file : files) {
+          dout.writeUTF(file.getName());
+        }
+        dout.writeUTF("END");
+        
+        dout.close();
+        dout.flush();
+        controlOut.flush();
+        dataSocket.close(); 
 
-      
-         File[] files = new File(".").listFiles();
-      
-         // byte[] bytes = new byte[(int)file.length()];
-      
-         for (File file : files) {
-            dout.writeUTF(file.getName());
-         }
-         dout.writeUTF("END");
-         System.out.println("Files Sent!");
-         dout.close();
-         dout.flush();
-         controlOut.flush();
-         dataSocket.close();
-      
+        System.out.println("File List Sent To Client.");     
       
       } catch (Exception e) {
          System.out.println(e);
@@ -58,16 +53,13 @@ final class FtpRequestServer implements Runnable {
    }
 
    void retreveFile(String fileName) {
-      System.out.println("Getting File: " + fileName);
+      System.out.println("Retreving File: " + fileName);
 
       try{
 
-         Socket dataSocket = new Socket("localhost", 10004);
+         Socket dataSocket = new Socket(clientName, dataPort);
          DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
-
-         // OutputStream out = dataSocket.getOutputStream();
-         // DataOutputStream dout = new DataOutputStream(out);
-
+         
          File file = new File(fileName);
          byte[] bytes = new byte[(int)file.length()];
 
@@ -82,10 +74,9 @@ final class FtpRequestServer implements Runnable {
          dout.write(bytes, 0, bytes.length);
 
          dataSocket.close();
-         dout.flush();
-         // dout.close();
+         dout.flush();         
          
-         System.out.println("File Sent!");
+         System.out.println("File Sent To Client.");
 
       } catch (Exception e) {
         System.out.println(e);
@@ -94,17 +85,17 @@ final class FtpRequestServer implements Runnable {
    }
 
    void saveFile(String fileName) {
-      System.out.println("File " + fileName + " received from Client.");
+      System.out.println("File: " + fileName + " received from Client.");
       try {
       
-         Socket dataSocket = new ServerSocket(10004).accept();
+         Socket dataSocket = new Socket(clientName, dataPort);
          // InputStream in = dataSocket.getInputStream();
          // DataInputStream din = new DataInputStream(in);
          DataInputStream din = new DataInputStream(dataSocket.getInputStream());
       
          int bytes;
       
-         OutputStream out = new FileOutputStream(("New" + fileName));
+         OutputStream out = new FileOutputStream(("copy_" + fileName));
          long sizeOfData = din.readLong();
          byte[] buffer = new byte[1024];
          while (sizeOfData > 0 && (bytes = din.read(buffer, 0, (int) Math.min(buffer.length, sizeOfData))) != -1) {
@@ -112,11 +103,10 @@ final class FtpRequestServer implements Runnable {
             sizeOfData -= bytes;
          }
       
-         out.close();
+         out.close();      
+         dataSocket.close();    
       
-         dataSocket.close();        
-      
-         //   in.close();
+         
          System.out.println("File Saved Successfully...");
       
       } catch (Exception e) {
@@ -134,7 +124,7 @@ final class FtpRequestServer implements Runnable {
             String cmd = controlIn.readUTF();
             // String[] command = cmd.split("\\s");
 
-            System.out.println("Server recieve command: " + cmd);
+            System.out.println("Server recieved command: " + cmd);
 
             switch(cmd.toUpperCase()) {
                case "LIST":
@@ -150,16 +140,14 @@ final class FtpRequestServer implements Runnable {
                   break;
                case "QUIT":
                   System.out.println("Client Disconnecting...");
-                  controlSocket.close();
-                  // dataSocket.close();
+                  controlSocket.close();                  
                   return;
                case "DATA":
                   clientName = controlIn.readUTF();
-                  dataPort = Integer.parseInt(controlIn.readUTF());
-                  // dataSocket = new Socket("localhost", 10004);
+                  dataPort = Integer.parseInt(controlIn.readUTF());                  
                   break;
                case "TEST":
-                  System.out.println("Test Recieved!!!");
+                  // System.out.println("Test Successfull: Connected to ");
                   break;
             }
 
