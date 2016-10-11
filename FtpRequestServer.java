@@ -4,95 +4,79 @@ import java.util.* ;
 
 final class FtpRequestServer implements Runnable {
     final static String CRLF = "\r\n";
-    int dataPort = 10004;
+    String clientName;
+    int dataPort;
     Socket controlSocket;
-    Socket dataSocket;
+   //  Socket dataSocket;
 
     // Control Connection
     DataInputStream controlIn;
     DataOutputStream controlOut;
 
-    // Data Connection
-    DataInputStream dataIn;
-    DataOutputStream dataOut;
-
     // Constructor
     FtpRequestServer(Socket socket) throws Exception {
       try {
-         this.controlSocket = socket;
-         this.controlIn = new DataInputStream(controlSocket.getInputStream());
-         this.controlOut = new DataOutputStream(controlSocket.getOutputStream());
-      } catch (Exception e) {
-         System.out.println(e);
-      }
-    }
-
-    void createDataConnection() {
-      try {
-         this.dataSocket = new Socket("localhost", dataPort);
-         this.dataIn = new DataInputStream(this.dataSocket.getInputStream());
-         this.dataOut = new DataOutputStream(this.dataSocket.getOutputStream());
-
+         controlSocket = socket;
+         controlIn = new DataInputStream(controlSocket.getInputStream());
+         controlOut = new DataOutputStream(controlSocket.getOutputStream());
       } catch (Exception e) {
          System.out.println(e);
       }
     }
 
     void listDirContents() {
-      System.out.println("List all files in current directory requet recieved:");
-      try {
-         createDataConnection();
-         File[] files = new File(".").listFiles();
 
-         for (File file : files) {
-            this.dataOut.writeUTF(file.getName());
-         }
-         System.out.println("Files Sent!");
-
-         this.dataIn.close();
-         this.dataIn = null;
-         this.dataOut.close();
-         this.dataIn = null;
-         this.dataSocket.close();
-         this.dataSocket = null;
-      } catch (Exception e) {
-         System.out.println(e);
-      }
+      // System.out.println("List all files in current directory requet recieved:");
+      // try {
+      //    System.out.println(clientName);
+      //
+      //    OutputStream out = dataSocket.getOutputStream();
+      //    DataOutputStream dout = new DataOutputStream(out);
+      //
+      //    File[] files = new File(".").listFiles();
+      //
+      //    // byte[] bytes = new byte[(int)file.length()];
+      //
+      //    for (File file : files) {
+      //       dout.writeUTF(file.getName());
+      //    }
+      //    dout.writeUTF("END");
+      //    System.out.println("Files Sent!");
+      //
+      //    dout.flush();
+      //
+      // } catch (Exception e) {
+      //    System.out.println(e);
+      // }
    }
-
-
 
    void retreveFile(String fileName) {
       System.out.println("Getting File: " + fileName);
 
       try{
 
-        createDataConnection();
-        File file = new File(fileName);
-        if(!file.exists()){
-          dataOut.writeUTF("File Not Found");
-          System.out.println("File Not Found");
-          return;
-        }
-        else{
-          System.out.println("Sending File...");
-          dataOut.writeUTF("READY");
-          FileInputStream fileIn = new FileInputStream(file);
-          int ch;
-          do{
-            ch = fileIn.read();
-            dataOut.writeUTF(String.valueOf(ch));
-          }while(ch!=-1);
+         Socket dataSocket = new Socket("localhost", 10004);
+         DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
 
-          fileIn.close();
-          System.out.println("File Sent!");
-        }
-        this.dataIn.close();
-        this.dataIn = null;
-        this.dataOut.close();
-        this.dataIn = null;
-        this.dataSocket.close();
-        this.dataSocket = null;
+         // OutputStream out = dataSocket.getOutputStream();
+         // DataOutputStream dout = new DataOutputStream(out);
+
+         File file = new File(fileName);
+         byte[] bytes = new byte[(int)file.length()];
+
+         FileInputStream fin = new FileInputStream(file);
+
+         BufferedInputStream buffin = new BufferedInputStream(fin);
+
+         DataInputStream datain = new DataInputStream(buffin);
+         datain.readFully(bytes, 0, bytes.length);
+
+         dout.writeLong(bytes.length);
+         dout.write(bytes, 0, bytes.length);
+         dout.flush();
+         dout.close();
+         dataSocket.close();
+         System.out.println("File Sent!");
 
       } catch (Exception e) {
         System.out.println(e);
@@ -100,9 +84,35 @@ final class FtpRequestServer implements Runnable {
 
    }
 
-   void storeFile(String fileName) {
-
-      // Define data connection. Wait for data. Save file.
+   void saveFile(String fileName) {
+      // System.out.println("File " + fileName + " received from Client.");
+      // try {
+      //
+      //    // Socket dataSocket = new ServerSocket(10004).accept();
+      //    InputStream in = dataSocket.getInputStream();
+      //    DataInputStream din = new DataInputStream(in);
+      //    // DataInputStream din = new DataInputStream(dataSocket.getInputStream());
+      //
+      //    int bytes;
+      //
+      //    OutputStream out = new FileOutputStream(("New" + fileName));
+      //    long sizeOfData = din.readLong();
+      //    byte[] buffer = new byte[1024];
+      //    while (sizeOfData > 0 && (bytes = din.read(buffer, 0, (int) Math.min(buffer.length, sizeOfData))) != -1) {
+      //       out.write(buffer, 0, bytes);
+      //       sizeOfData -= bytes;
+      //    }
+      //
+      //    out.close();
+      //
+      //    //   dataSocket.close();
+      //
+      //    //   in.close();
+      //    System.out.println("File Saved Successfully...");
+      //
+      // } catch (Exception e) {
+      //      System.out.println(e);
+      // }
 
    }
 
@@ -123,13 +133,21 @@ final class FtpRequestServer implements Runnable {
                   break;
                case "RETR":
                   String fileName = controlIn.readUTF();
-                  System.out.println("Recieved GET FILE: " + fileName);
-
                   retreveFile(fileName);
                   break;
                case "STOR":
+                  String fileName2 = controlIn.readUTF();
+                  saveFile(fileName2);
                   break;
                case "QUIT":
+                  System.out.println("Client Disconnecting...");
+                  controlSocket.close();
+                  // dataSocket.close();
+                  return;
+               case "DATA":
+                  clientName = controlIn.readUTF();
+                  dataPort = Integer.parseInt(controlIn.readUTF());
+                  // dataSocket = new Socket("localhost", 10004);
                   break;
                case "TEST":
                   System.out.println("Test Recieved!!!");
@@ -140,6 +158,5 @@ final class FtpRequestServer implements Runnable {
      		    System.out.println(e);
      		}
       }
-
    }
 }
