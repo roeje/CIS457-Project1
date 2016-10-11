@@ -36,7 +36,7 @@ final class FtpRequestClient implements Runnable {
       this.serverName = serverName;
       this.controlPort = port;
       try {
-         controlSocket = new Socket("localhost", 10003);
+         controlSocket = new Socket(serverName, 10003);
          controlIn = new DataInputStream(this.controlSocket.getInputStream());
          controlOut = new DataOutputStream(this.controlSocket.getOutputStream());
 
@@ -90,7 +90,8 @@ final class FtpRequestClient implements Runnable {
       try {
          controlOut.writeUTF("RETR");
          controlOut.writeUTF(fileName);
-         Socket dataSocket = new ServerSocket(10004).accept();
+         ServerSocket server = new ServerSocket(10004);
+         Socket dataSocket = server.accept();
          DataInputStream din = new DataInputStream(dataSocket.getInputStream());
 
          // InputStream in = dataSocket.getInputStream();
@@ -112,6 +113,7 @@ final class FtpRequestClient implements Runnable {
          //   dataSocket.close();
 
          // din.close();
+         server.close();
          dataSocket.close();
          
          System.out.println("File Saved Sucessfully...");
@@ -128,7 +130,8 @@ final class FtpRequestClient implements Runnable {
          controlOut.writeUTF("STOR");
          controlOut.writeUTF(fileName);
       
-         Socket dataSocket = new Socket(serverName, 10004);
+         ServerSocket server = new ServerSocket(10004);
+         Socket dataSocket = server.accept();
          // OutputStream out = dataSocket.getOutputStream();
          // DataOutputStream dout = new DataOutputStream(out);
          DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
@@ -146,6 +149,7 @@ final class FtpRequestClient implements Runnable {
          dout.writeLong(bytes.length);
          dout.write(bytes, 0, bytes.length);
          dout.flush();
+         server.close();
          System.out.println("File Sent To Server...");
 
 
