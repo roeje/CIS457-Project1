@@ -73,7 +73,12 @@ final class FtpRequestClient implements Runnable {
             System.out.println(file);
             file = this.dataIn.readUTF();
          }
+         this.dataIn.close();
+         this.dataIn = null;
+         this.dataOut.close();
+         this.dataIn = null;
          this.dataSocket.close();
+         this.dataSocket = null;
 
       } catch (Exception e) {
          System.out.println(e);

@@ -48,7 +48,13 @@ final class FtpRequestServer implements Runnable {
             this.dataOut.writeUTF(file.getName());
          }
          System.out.println("Files Sent!");
+
+         this.dataIn.close();
+         this.dataIn = null;
+         this.dataOut.close();
+         this.dataIn = null;
          this.dataSocket.close();
+         this.dataSocket = null;
       } catch (Exception e) {
          System.out.println(e);
       }
@@ -82,9 +88,13 @@ final class FtpRequestServer implements Runnable {
           System.out.println("File Sent!");
         }
         this.dataIn.close();
+        this.dataIn = null;
         this.dataOut.close();
+        this.dataIn = null;
         this.dataSocket.close();
-      }catch(Exception e){
+        this.dataSocket = null;
+
+      } catch (Exception e) {
         System.out.println(e);
       }
 
