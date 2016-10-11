@@ -6,8 +6,7 @@ final class FtpRequestServer implements Runnable {
     final static String CRLF = "\r\n";
     String clientName;
     int dataPort;
-    Socket controlSocket;
-   //  Socket dataSocket;
+    Socket controlSocket;   
 
     // Control Connection
     DataInputStream controlIn;
@@ -24,15 +23,18 @@ final class FtpRequestServer implements Runnable {
       }
     }
 
+    // Implement logic to list content of current working directory
     void listDirContents() {
 
       System.out.println("Sending list of all directory files...");
-      try {
-        // System.out.println(clientName); 
 
+      try {        
+
+        // Establish connection to client data TCP socket
         Socket dataSocket = new Socket(clientName, dataPort);
         DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
-      
+        
+        // Get array of all files in current directory
         File[] files = new File(".").listFiles();     
       
         for (File file : files) {
@@ -52,11 +54,13 @@ final class FtpRequestServer implements Runnable {
       }
    }
 
+   // Implement logic to send file to client
    void retreveFile(String fileName) {
       System.out.println("Retreving File: " + fileName);
 
       try{
 
+        // Connect to client data TCP socket
          Socket dataSocket = new Socket(clientName, dataPort);
          DataOutputStream dout = new DataOutputStream(dataSocket.getOutputStream());
          
@@ -84,6 +88,7 @@ final class FtpRequestServer implements Runnable {
 
    }
 
+   // Implement logic to save file recieved from client
    void saveFile(String fileName) {
       System.out.println("File: " + fileName + " received from Client.");
       try {
@@ -121,9 +126,8 @@ final class FtpRequestServer implements Runnable {
       System.out.println("Server Thread Started:");
       while(true) {
          try {
-            String cmd = controlIn.readUTF();
-            // String[] command = cmd.split("\\s");
-
+          
+            String cmd = controlIn.readUTF(); 
             System.out.println("Server recieved command: " + cmd);
 
             switch(cmd.toUpperCase()) {
@@ -147,7 +151,6 @@ final class FtpRequestServer implements Runnable {
                   dataPort = Integer.parseInt(controlIn.readUTF());                  
                   break;
                case "TEST":
-                  // System.out.println("Test Successfull: Connected to ");
                   break;
             }
 
