@@ -1,6 +1,6 @@
 #CIS 457 Project 1
 
-##Simple Java FTP client/server implementation
+## Simple Java FTP client/server implementation
 
 ###Design:
 The design of our FTP implementation utilizes both a server and a client java class. When run, the two class create separate instances that interact with one another to transfer files. The FtpServer.java class creates an instance (thread) of FtpRequestServer.java for every client that connects to the server. Each FtpRequestServer instance contains all logic necessary to interact with the server and send and receive files and user commands.
